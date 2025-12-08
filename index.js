@@ -30,16 +30,11 @@ if (process.env.SERVER_ENV !== "development") {
 app.use(session(sessionOptions));
 app.use(express.json());
 
-// Add this debugging middleware
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
 
-UserRoutes(app, db);
-CourseRoutes(app, db);
-ModulesRoutes(app, db);
-AssignmentsRoutes(app, db);
+UserRoutes(app);
+CourseRoutes(app);
+ModulesRoutes(app);
+AssignmentsRoutes(app);
 Lab5(app)
 Hello(app)
 app.listen(process.env.PORT || 4000)
