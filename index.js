@@ -16,7 +16,10 @@ const app = express();
 // CORS
 app.use(cors({
   credentials: true,
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  origin: [
+    "http://localhost:3000",
+    "https://kambaz-next-js-k1ic9wjbd-gia-violinis-projects.vercel.app"
+  ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type"]
 }));
