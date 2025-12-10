@@ -1,44 +1,45 @@
 import { v4 as uuidv4 } from "uuid";
+
 export default function CoursesDao(db) {
-  function findAllCourses() {
-    return db.courses;
+  const courses = db.collection("courses");
+  const enrollments = db.collection("enrollments");
+
+  async function findAllCourses() {
+    return await courses.find({}).toArray();
   }
 
-  function findCoursesForEnrolledUser(userId) {
-  const { courses, enrollments } = db;
-  const enrolledCourses = courses.filter((course) =>
-    enrollments.some((enrollment) => enrollment.user === userId && enrollment.course === course._id));
-  return enrolledCourses;
-}
+  async function findCoursesForEnrolledUser(userId) {
+    const enrollmentDocs = await enrollments.find({ user: userId }).toArray();
+    const courseIds = enrollmentDocs.map((e) => e.course);
+    return await courses.find({ _id: { $in: courseIds } }).toArray();
+  }
 
-function createCourse(course) {
-  const newCourse = { ...course, _id: uuidv4() };
-  db.courses = [...db.courses, newCourse];
-  return newCourse;
-}
+  async function createCourse(course) {
+    const newCourse = { ...course, _id: uuidv4() };
+    await courses.insertOne(newCourse);
+    return newCourse;
+  }
 
-function deleteCourse(courseId) {
-    const { courses, enrollments } = db;
-    db.courses = courses.filter((course) => course._id !== courseId);
-    db.enrollments = enrollments.filter(
-      (enrollment) => enrollment.course !== courseId
-  )
-}
+  async function deleteCourse(courseId) {
+    await courses.deleteOne({ _id: courseId });
+    await enrollments.deleteMany({ course: courseId });
+    return { deleted: true };
+  }
 
-function updateCourse(courseId, courseUpdates) {
-  const { courses } = db;
-  const course = courses.find((course) => course._id === courseId);
-  Object.assign(course, courseUpdates);
-  return course;
-}
+  async function updateCourse(courseId, courseUpdates) {
+    const result = await courses.findOneAndUpdate(
+      { _id: courseId },
+      { $set: courseUpdates },
+      { returnDocument: "after" }
+    );
+    return result.value;
+  }
 
-
-  return { findAllCourses,
+  return {
+    findAllCourses,
     findCoursesForEnrolledUser,
     createCourse,
     deleteCourse,
-    updateCourse
-   };
+    updateCourse,
+  };
 }
-
-  
