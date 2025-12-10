@@ -1,5 +1,6 @@
 import UsersDao from "./dao.js";
-export default function UserRoutes(app) {
+export default function UserRoutes(app, db) {
+
 app.get("/api/users/create-test", async (req, res) => {
   try {
     const existing = await dao.findUserByUsername("testuser");
@@ -31,7 +32,7 @@ app.get("/api/users/create-test", async (req, res) => {
   }
 });
 
- const dao = UsersDao();
+const dao = UsersDao(db);
   const createUser = async (req, res) => {
     const user = await dao.createUser(req.body);
     res.json(user);
