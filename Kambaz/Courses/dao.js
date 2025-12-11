@@ -1,42 +1,46 @@
 import { v4 as uuidv4 } from "uuid";
+import CourseModel from "./model.js";       // Mongoose model for courses
+import EnrollmentModel from "../Enrollments/model.js"; // Mongoose model for enrollments
 
-export default function CoursesDao(db) {
-  const courses = db.collection("courses");
-  const enrollments = db.collection("enrollments");
+export default function CoursesDao() {
 
-  async function findAllCourses() {
-    return await courses.find({}).toArray();
-  }
+  // --- FIND ALL COURSES ---
+  const findAllCourses = async () => {
+    return await CourseModel.find();
+  };
 
-  async function findCoursesForEnrolledUser(userId) {
-    const enrollmentDocs = await enrollments.find({ user: userId }).toArray();
+  // --- FIND COURSES FOR A USER (ENROLLED) ---
+  const findCoursesForEnrolledUser = async (userId) => {
+    const enrollmentDocs = await EnrollmentModel.find({ user: userId });
     const courseIds = enrollmentDocs.map((e) => e.course);
-    return await courses.find({ _id: { $in: courseIds } }).toArray();
-  }
+    return await CourseModel.find({ _id: { $in: courseIds } });
+  };
 
-  async function createCourse(course) {
+  // --- CREATE COURSE ---
+  const createCourse = async (course) => {
     const newCourse = { ...course, _id: uuidv4() };
-    await courses.insertOne(newCourse);
-    return newCourse;
-  }
+    return await CourseModel.create(newCourse);
+  };
 
-  async function deleteCourse(courseId) {
-    await courses.deleteOne({ _id: courseId });
-    await enrollments.deleteMany({ course: courseId });
+  // --- DELETE COURSE ---
+  const deleteCourse = async (courseId) => {
+    await CourseModel.findByIdAndDelete(courseId);
+    await EnrollmentModel.deleteMany({ course: courseId });
     return { deleted: true };
-  }
+  };
 
-  async function updateCourse(courseId, courseUpdates) {
-    const result = await courses.findOneAndUpdate(
-      { _id: courseId },
+  // --- UPDATE COURSE ---
+  const updateCourse = async (courseId, courseUpdates) => {
+    const updatedCourse = await CourseModel.findByIdAndUpdate(
+      courseId,
       { $set: courseUpdates },
-      { returnDocument: "after" }
+      { new: true } // return the updated doc
     );
-    return result.value;
-  }
+    return updatedCourse;
+  };
 
-
-  return { findAllCourses,
+  return {
+    findAllCourses,
     findCoursesForEnrolledUser,
     createCourse,
     deleteCourse,

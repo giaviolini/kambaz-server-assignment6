@@ -1,53 +1,25 @@
+import model from "./model.js";
 import { v4 as uuidv4 } from "uuid";
+export default function UsersDao() {
+ const createUser = (user) => {
+  const newUser = { ...user, _id: uuidv4() };
+  return model.create(newUser);
 
-export default function UsersDao(db) {
-  const users = db.collection("users");
+ };
+ const findAllUsers = () => model.find();
+ const findUserById = (userId) => model.findById(userId);
+ const findUserByUsername = (username) => model.findOne({ username: username });
+ const findUserByCredentials = (username, password) => model.findOne({ username, password });
+ const findUsersByRole = (role) => model.find({ role: role });
+ const findUsersByPartialName = (partialName) => {
+  const regex = new RegExp(partialName, "i"); // 'i' makes it case-insensitive
+  return model.find({
+    $or: [{ firstName: { $regex: regex } }, { lastName: { $regex: regex } }],
+  });
+};
 
-  // --- CREATE USER ---
-  const createUser = async (user) => {
-    const newUser = { ...user, _id: uuidv4() };
-    await users.insertOne(newUser);
-    return newUser;
-  };
-
-  // --- FIND ALL USERS ---
-  const findAllUsers = async () => {
-    return await users.find({}).toArray();
-  };
-
-  // --- FIND USER BY ID ---
-  const findUserById = async (userId) => {
-    return await users.findOne({ _id: userId });
-  };
-
-  // --- FIND USER BY USERNAME ---
-  const findUserByUsername = async (username) => {
-    return await users.findOne({ username });
-  };
-
-  // --- FIND USER BY CREDENTIALS ---
-  const findUserByCredentials = async (username, password) => {
-    return await users.findOne({ username, password });
-  };
-
-  // --- UPDATE USER ---
-  const updateUser = async (id, userUpdates) => {
-    await users.updateOne({ _id: id }, { $set: userUpdates });
-    return await findUserById(id);
-  };
-
-  // --- DELETE USER ---
-  const deleteUser = async (userId) => {
-    await users.deleteOne({ _id: userId });
-  };
-
-  return {
-    createUser,
-    findAllUsers,
-    findUserById,
-    findUserByUsername,
-    findUserByCredentials,
-    updateUser,
-    deleteUser,
-  };
+ const updateUser = (userId, user) => model.updateOne({ _id: userId }, { $set: user });
+ const deleteUser = (userId) => model.findByIdAndDelete( userId );
+ return {
+   createUser, findAllUsers, findUserById, findUserByUsername, findUserByCredentials, updateUser, deleteUser, findUsersByRole, findUsersByPartialName };
 }
