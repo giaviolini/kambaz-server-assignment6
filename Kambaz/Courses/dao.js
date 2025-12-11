@@ -35,8 +35,8 @@ export default function CoursesDao(db) {
     return result.value;
   }
 
-  return {
-    findAllCourses,
+
+  return { findAllCourses,
     findCoursesForEnrolledUser,
     createCourse,
     deleteCourse,
