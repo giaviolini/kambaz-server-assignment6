@@ -59,4 +59,3 @@ export default function WorkingWithObjects(app) {
  app.get("/lab5/module/description/:newDescription", setModuleDescription);
  app.get("/lab5/module/name/:newName", setModuleName);
 };
-  

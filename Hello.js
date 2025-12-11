@@ -7,4 +7,3 @@ export default function Hello(app) {const sayHello = (req, res) => {
   app.get("/hello", sayHello);
   app.get("/", sayWelcome);
   }
-  
