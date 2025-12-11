@@ -1,43 +1,38 @@
 import { v4 as uuidv4 } from "uuid";
-import CourseModel from "./model.js";
-import EnrollmentModel from "../Enrollments/model.js";
 
-export default function CoursesDao() {
+export default function CoursesDao(db) {
+  const courses = db.collection("courses");
+  const enrollments = db.collection("enrollments");
 
-  // Get all courses
   async function findAllCourses() {
-    return CourseModel.find({}, { name: 1, description: 1 });
+    return await courses.find({}).toArray();
   }
 
-  // Find courses for a specific user
   async function findCoursesForEnrolledUser(userId) {
-    // 1. Find all enrollments for this user
-    const enrollments = await EnrollmentModel.find({ user: userId });
-
-    // 2. Extract course IDs
-    const courseIds = enrollments.map((e) => e.course);
-
-    // 3. Find all matching courses
-    return CourseModel.find(
-      { _id: { $in: courseIds } },
-      { name: 1, description: 1 }
-    );
+    const enrollmentDocs = await enrollments.find({ user: userId }).toArray();
+    const courseIds = enrollmentDocs.map((e) => e.course);
+    return await courses.find({ _id: { $in: courseIds } }).toArray();
   }
 
-  // Create a new course
   async function createCourse(course) {
     const newCourse = { ...course, _id: uuidv4() };
-    return CourseModel.create(newCourse);
+    await courses.insertOne(newCourse);
+    return newCourse;
   }
 
-  // Delete a course
   async function deleteCourse(courseId) {
-    return CourseModel.deleteOne({ _id: courseId });
+    await courses.deleteOne({ _id: courseId });
+    await enrollments.deleteMany({ course: courseId });
+    return { deleted: true };
   }
 
-  // Update a course
   async function updateCourse(courseId, courseUpdates) {
-    return CourseModel.updateOne({ _id: courseId }, { $set: courseUpdates });
+    const result = await courses.findOneAndUpdate(
+      { _id: courseId },
+      { $set: courseUpdates },
+      { returnDocument: "after" }
+    );
+    return result.value;
   }
 
   return {
@@ -45,7 +40,6 @@ export default function CoursesDao() {
     findCoursesForEnrolledUser,
     createCourse,
     deleteCourse,
-    updateCourse
+    updateCourse,
   };
 }
-  

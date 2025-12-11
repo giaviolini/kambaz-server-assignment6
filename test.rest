@@ -1,0 +1,7 @@
+POST https://kambaz-node-server-app-f25.onrender.com/api/users/signin
+Content-Type: application/json
+
+{
+  "username": "iron_man",
+  "password": "stark123"
+}

@@ -1,43 +1,30 @@
 import { v4 as uuidv4 } from "uuid";
-import model from "../Courses/model.js";
 
-export default function ModulesDao() {
+export default function ModulesDao(db) {
+  const modules = db.collection("modules"); // MongoDB collection
 
-  async function updateModule(courseId, moduleId, moduleUpdates) {
-    const course = await model.findById(courseId);
-    const mod = course.modules.id(moduleId);
-
-    if (!mod) {
-      throw new Error("Module not found");
-    }
-
-    Object.assign(mod, moduleUpdates);
-    await course.save();
-
-    return mod;
-  }
-
-  async function deleteModule(courseId, moduleId) {
-    return model.updateOne(
-      { _id: courseId },
-      { $pull: { modules: { _id: moduleId } } }
+  async function updateModule(moduleId, moduleUpdates) {
+    const result = await modules.findOneAndUpdate(
+      { _id: moduleId },
+      { $set: moduleUpdates },
+      { returnDocument: "after" }
     );
+    return result.value; // updated module
   }
 
-  async function createModule(courseId, module) {
+  async function deleteModule(moduleId) {
+    const result = await modules.deleteOne({ _id: moduleId });
+    return result.deletedCount === 1;
+  }
+
+  async function createModule(module) {
     const newModule = { ...module, _id: uuidv4() };
-
-    await model.updateOne(
-      { _id: courseId },
-      { $push: { modules: newModule } }
-    );
-
+    await modules.insertOne(newModule);
     return newModule;
   }
 
   async function findModulesForCourse(courseId) {
-    const course = await model.findById(courseId);
-    return course.modules;
+    return await modules.find({ course: courseId }).toArray();
   }
 
   return {
@@ -47,3 +34,6 @@ export default function ModulesDao() {
     updateModule,
   };
 }
+
+
+
