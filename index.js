@@ -22,15 +22,12 @@ if (!CONNECTION_STRING) {
   process.exit(1);
 }
 
-mongoose.connect(CONNECTION_STRING, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("MongoDB connected successfully"))
-.catch((err) => {
-  console.error("MongoDB connection error:", err);
-  process.exit(1);
-});
+mongoose.connect(CONNECTION_STRING)
+  .then(() => console.log("MongoDB connected successfully"))
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+    process.exit(1);
+  });
 
 // --- Middleware ---
 app.use(express.json());
