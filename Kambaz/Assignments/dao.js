@@ -1,36 +1,36 @@
-import { v4 as uuidv4 } from "uuid";
+import model from "./model.js";
 
-export default function AssignmentsDao(db) {
-  const assignments = db.collection("assignments");
+export default function AssignmentsDao() {
 
+  // Get all assignments for a course
   async function findAssignmentsForCourse(courseId) {
-    return await assignments.find({ course: courseId }).toArray();
+    return await model.find({ course: courseId }).populate("course");
   }
 
-  async function createAssignment(assignment) {
-    const newAssignment = { ...assignment, _id: uuidv4() };
-    await assignments.insertOne(newAssignment);
-    return newAssignment;
+  // Create a new assignment for a course
+  async function createAssignment(courseId, assignment) {
+    const newAssignment = { ...assignment, course: courseId };
+    return await model.create(newAssignment);
   }
 
-  async function deleteAssignment(assignmentId) {
-    await assignments.deleteOne({ _id: assignmentId });
-    return { deleted: true };
-  }
-
+  // Update an existing assignment
   async function updateAssignment(assignmentId, assignmentUpdates) {
-    const result = await assignments.findOneAndUpdate(
-      { _id: assignmentId },
+    return await model.findByIdAndUpdate(
+      assignmentId,
       { $set: assignmentUpdates },
-      { returnDocument: "after" }
+      { new: true } // return the updated document
     );
-    return result.value;
+  }
+
+  // Delete an assignment
+  async function deleteAssignment(assignmentId) {
+    return await model.findByIdAndDelete(assignmentId);
   }
 
   return {
     findAssignmentsForCourse,
     createAssignment,
-    deleteAssignment,
     updateAssignment,
+    deleteAssignment,
   };
 }
