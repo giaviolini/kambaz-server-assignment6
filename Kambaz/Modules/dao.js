@@ -1,39 +1,42 @@
 import { v4 as uuidv4 } from "uuid";
+import ModulesModel from "./model.js"; // your Mongoose model
 
-export default function ModulesDao(db) {
-  const modules = db.collection("modules"); // MongoDB collection
+export default function ModulesDao() {
 
-  async function updateModule(moduleId, moduleUpdates) {
-    const result = await modules.findOneAndUpdate(
-      { _id: moduleId },
-      { $set: moduleUpdates },
-      { returnDocument: "after" }
-    );
-    return result.value; // updated module
-  }
-
-  async function deleteModule(moduleId) {
-    const result = await modules.deleteOne({ _id: moduleId });
-    return result.deletedCount === 1;
-  }
-
-  async function createModule(module) {
+  // --- CREATE MODULE ---
+  const createModule = async (module) => {
     const newModule = { ...module, _id: uuidv4() };
-    await modules.insertOne(newModule);
-    return newModule;
-  }
+    return await ModulesModel.create(newModule);
+  };
 
-  async function findModulesForCourse(courseId) {
-    return await modules.find({ course: courseId }).toArray();
-  }
+  // --- FIND MODULES FOR A COURSE ---
+  const findModulesForCourse = async (courseId) => {
+    return await ModulesModel.find({ course: courseId });
+  };
+
+  // --- UPDATE MODULE ---
+  const updateModule = async (moduleId, moduleUpdates) => {
+    return await ModulesModel.findByIdAndUpdate(
+      moduleId,
+      moduleUpdates,
+      { new: true } // return updated module
+    );
+  };
+
+  // --- DELETE MODULE ---
+  const deleteModule = async (moduleId) => {
+    const result = await ModulesModel.findByIdAndDelete(moduleId);
+    return !!result; // true if deleted, false otherwise
+  };
 
   return {
-    findModulesForCourse,
     createModule,
-    deleteModule,
+    findModulesForCourse,
     updateModule,
+    deleteModule,
   };
 }
+
 
 
 
