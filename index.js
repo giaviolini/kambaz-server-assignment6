@@ -35,33 +35,26 @@ app.use(express.json());
 // CORS configuration
 app.use(
   cors({
-    origin: "https://kambaz-next-js-kohl.vercel.app", // your frontend URL
-    credentials: true, // allow cookies to be sent
+    origin: "https://kambaz-next-js-kohl.vercel.app", 
+    credentials: true, 
   })
 );
 
-// Session configuration
 const sessionOptions = {
   secret: process.env.SESSION_SECRET || "kambaz",
   resave: false,
   saveUninitialized: false,
   cookie: {
-    sameSite: "none",  // allow cross-site
-    secure: true,      // required for HTTPS
-    domain: "kambaz-server-assignment6.onrender.com", // your backend domain
+    sameSite: "none",  // cross-site cookie
+    secure: true,      // HTTPS required
+    httpOnly: true,    // prevents client-side JS from reading the cookie
+    maxAge: 1000 * 60 * 60 * 24, // optional, 1 day
   },
+  proxy: true, // necessary on Render for HTTPS behind a proxy
 };
 
-if (process.env.SERVER_ENV !== "development") {
-  sessionOptions.proxy = true;
-  sessionOptions.cookie = {
-    sameSite: "none",
-    secure: true,
-    domain: process.env.SERVER_URL,
-  };
-}
-
 app.use(session(sessionOptions));
+
 
 // Debugging middleware to log requests
 app.use((req, res, next) => {
