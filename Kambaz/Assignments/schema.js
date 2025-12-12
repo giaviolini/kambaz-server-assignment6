@@ -7,7 +7,8 @@ const schema = new mongoose.Schema({
   course: { type: String, ref: "CourseModel", required: true }, // reference to course
   dueDate: { type: Date },                         // optional due date
 }, {
-  timestamps: true // automatically add createdAt and updatedAt
-}, { collection: "assignments" } );
+  timestamps: true,
+  collection: "assignments"
+} );
 
 export default schema;
