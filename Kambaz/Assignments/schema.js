@@ -8,6 +8,6 @@ const schema = new mongoose.Schema({
   dueDate: { type: Date },                         // optional due date
 }, {
   timestamps: true // automatically add createdAt and updatedAt
-});
+}, { collection: "assignments" } );
 
 export default schema;
